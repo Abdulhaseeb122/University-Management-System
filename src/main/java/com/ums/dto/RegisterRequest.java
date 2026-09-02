@@ -42,4 +42,7 @@ public class RegisterRequest {
 
     @NotNull(message = "Role ID is required")
     private Long roleId;
+
+    @NotNull(message = "Department ID is required for students")
+    private Long departmentId;
 }
