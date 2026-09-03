@@ -12,4 +12,7 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
     Optional<Student> findByRollNumber(String rollNumber);
     Boolean existsByRollNumber(String rollNumber);
     List<Student> findByDepartmentId(Long departmentId);
+
+    // --- NEW METHOD ---
+    Optional<Student> findByUserEmail(String email); // Find student by user's email
 }
