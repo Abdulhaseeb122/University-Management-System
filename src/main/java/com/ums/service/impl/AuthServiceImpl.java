@@ -3,11 +3,13 @@ package com.ums.service.impl;
 import com.ums.dto.LoginRequest;
 import com.ums.dto.RegisterRequest;
 import com.ums.dto.StudentResponse;
+import com.ums.entity.Department;
 import com.ums.entity.Role;
 import com.ums.entity.Student;
 import com.ums.entity.User;
 import com.ums.exception.BadRequestException;
 import com.ums.exception.ResourceNotFoundException;
+import com.ums.repository.DepartmentRepository;
 import com.ums.repository.RoleRepository;
 import com.ums.repository.StudentRepository;
 import com.ums.repository.UserRepository;
@@ -27,17 +29,21 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final StudentRepository studentRepository;
+    private final DepartmentRepository departmentRepository; // <-- Naya add kiya
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
 
+    // Constructor mein DepartmentRepository add kiya
     public AuthServiceImpl(UserRepository userRepository,
                            RoleRepository roleRepository,
                            StudentRepository studentRepository,
+                           DepartmentRepository departmentRepository, // <-- Naya parameter
                            PasswordEncoder passwordEncoder,
                            JwtUtils jwtUtils) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.studentRepository = studentRepository;
+        this.departmentRepository = departmentRepository; // <-- Initialize kiya
         this.passwordEncoder = passwordEncoder;
         this.jwtUtils = jwtUtils;
     }
@@ -71,8 +77,15 @@ public class AuthServiceImpl implements AuthService {
 
         // Auto-create Student entity if assigned role is STUDENT
         if ("ROLE_STUDENT".equalsIgnoreCase(role.getName()) || "STUDENT".equalsIgnoreCase(role.getName())) {
+
+            // Default Department fetch karna zaroori hai (ID 1 wala Department)
+            // Note: Database mein department id=1 hona chahiye (jo humne SQL script mein insert kiya tha)
+            Department defaultDept = departmentRepository.findById(1L)
+                    .orElseThrow(() -> new ResourceNotFoundException("Default Department not found! Please insert Department with ID 1 in DB."));
+
             Student student = Student.builder()
                     .rollNumber("STU-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase())
+                    .department(defaultDept) // <-- Yahan Department set kiya
                     .currentSemester(1)
                     .admissionDate(LocalDate.now())
                     .cgpa(BigDecimal.ZERO)

@@ -1,14 +1,8 @@
 package com.ums.repository;
-
 import com.ums.entity.Enrollment;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
 import java.util.List;
-
-@Repository
 public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
+    boolean existsByStudentIdAndSectionId(Long studentId, Long sectionId);
     List<Enrollment> findByStudentId(Long studentId);
-    List<Enrollment> findBySectionId(Long sectionId);
-    Boolean existsByStudentIdAndSectionId(Long studentId, Long sectionId);
 }
