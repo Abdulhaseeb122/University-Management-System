@@ -7,6 +7,7 @@ import com.ums.exception.ResourceNotFoundException;
 import com.ums.repository.StudentRepository;
 import com.ums.service.StudentService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class StudentServiceImpl implements StudentService {
@@ -18,6 +19,7 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public StudentProfileResponse getStudentProfile(String email) {
         // Find student using the user's email
         Student student = studentRepository.findByUserEmail(email)
@@ -30,13 +32,17 @@ public class StudentServiceImpl implements StudentService {
     private StudentProfileResponse mapToResponse(Student student) {
         User user = student.getUser();
 
+        String departmentName = (student.getDepartment() != null)
+                ? student.getDepartment().getName()
+                : "Unassigned";
+
         return StudentProfileResponse.builder()
                 .id(student.getId())
                 .rollNumber(student.getRollNumber())
                 .fullName(user.getFirstName() + " " + user.getLastName())
                 .email(user.getEmail())
                 .phoneNumber(user.getPhoneNumber())
-                .departmentName(student.getDepartment().getName())
+                .departmentName(departmentName)
                 .currentSemester(student.getCurrentSemester())
                 .admissionDate(student.getAdmissionDate())
                 .academicStatus(student.getAcademicStatus())
