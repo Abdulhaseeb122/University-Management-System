@@ -1,11 +1,11 @@
 package com.ums.controller;
 
 import com.ums.dto.StudentProfileResponse;
+import com.ums.dto.StudentUpdateRequest;
 import com.ums.service.StudentService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 
@@ -21,8 +21,14 @@ public class StudentController {
 
     @GetMapping("/me")
     public ResponseEntity<StudentProfileResponse> getMyProfile(Principal principal) {
-        // Principal.getName() returns the email from JWT token
-        String email = principal.getName();
-        return ResponseEntity.ok(studentService.getStudentProfile(email));
+        return ResponseEntity.ok(studentService.getStudentProfile(principal.getName()));
+    }
+
+    // ---------------- NEW ENDPOINT ----------------
+    @PutMapping("/me")
+    public ResponseEntity<StudentProfileResponse> updateMyProfile(
+            Principal principal,
+            @Valid @RequestBody StudentUpdateRequest request) {
+        return ResponseEntity.ok(studentService.updateStudentProfile(principal.getName(), request));
     }
 }
