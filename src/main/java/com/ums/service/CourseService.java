@@ -1,9 +1,15 @@
 package com.ums.service;
-import com.ums.entity.Course;
-import com.ums.entity.Enrollment;
+
+import com.ums.dto.CourseRequest;
+import com.ums.dto.CourseResponse;
+
 import java.util.List;
+
 public interface CourseService {
-    List<Course> getAllAvailableCourses();
-    List<Enrollment> getMyCourses(String email);
-    String enrollStudent(String email, Long sectionId);
+    CourseResponse createCourse(CourseRequest request);
+    List<CourseResponse> getAllCourses();
+    CourseResponse getCourseById(Long id);
+    CourseResponse updateCourse(Long id, CourseRequest request);
+    void deleteCourse(Long id);
+    List<CourseResponse> getCoursesByDepartment(Long departmentId);
 }
