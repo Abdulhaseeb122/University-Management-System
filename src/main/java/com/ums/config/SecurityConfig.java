@@ -37,7 +37,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/student/**").hasRole("STUDENT")
-                        .requestMatchers("/api/v1/faculty/**").hasRole("FACULTY")   // <-- NEW
+                        .requestMatchers("/api/v1/faculty/**").hasRole("FACULTY")
+                        .requestMatchers("/api/v1/library/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
