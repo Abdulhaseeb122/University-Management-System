@@ -52,6 +52,11 @@ public class Student {
     private Integer totalCreditsEarned = 0;
 
     public enum AcademicStatus {
-        ACTIVE, PROBATION, SUSPENDED, GRADUATED, WITHDRAWN
+        ACTIVE,
+        PROBATION,
+        SUSPENDED,
+        ON_LEAVE,
+        GRADUATED,
+        WITHDRAWN
     }
 }
