@@ -6,15 +6,18 @@ import java.time.LocalDate;
 
 @Entity
 @Table(name = "hostel_allocations")
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class HostelAllocation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "student_id", nullable = false, unique = true)
+    @ManyToOne(fetch = FetchType.LAZY)   // <-- Changed from @OneToOne
+    @JoinColumn(name = "student_id", nullable = false)   // <-- unique = true removed
     private Student student;
 
     @ManyToOne(fetch = FetchType.LAZY)
