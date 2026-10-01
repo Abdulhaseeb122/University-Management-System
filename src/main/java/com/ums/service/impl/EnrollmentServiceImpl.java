@@ -44,18 +44,26 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Student profile not found for email: " + studentEmail));
 
-        // 2. Find the section
+        // 2. --- NEW: Block if student is not ACTIVE (includes ON_LEAVE) ---
+        if (student.getAcademicStatus() != Student.AcademicStatus.ACTIVE) {
+            throw new BadRequestException(
+                    "Cannot enroll: student status is " + student.getAcademicStatus()
+                            + ". Only ACTIVE students can enroll.");
+        }
+
+        // 3. Find the section
         CourseSection section = sectionRepository.findById(sectionId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Course section not found with ID: " + sectionId));
 
-        // 3. Section must belong to the current active term
+        // 4. Section must belong to the current active term
         if (!Boolean.TRUE.equals(section.getTerm().getIsCurrent())) {
             throw new BadRequestException(
-                    "Cannot enroll in a section of a non-current academic term: " + section.getTerm().getName());
+                    "Cannot enroll in a section of a non-current academic term: "
+                            + section.getTerm().getName());
         }
 
-        // 4. Cannot enroll twice (check active enrollment only)
+        // 5. Cannot enroll twice (check active enrollment only)
         boolean alreadyEnrolled = enrollmentRepository
                 .existsByStudentIdAndSectionIdAndStatus(
                         student.getId(), sectionId, Enrollment.EnrollmentStatus.ENROLLED);
@@ -63,20 +71,20 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             throw new BadRequestException("You are already enrolled in this section.");
         }
 
-        // 5. Check capacity
+        // 6. Check capacity
         if (section.getCurrentEnrollment() >= section.getMaxCapacity()) {
             throw new BadRequestException(
                     "Section is full. Max capacity: " + section.getMaxCapacity());
         }
 
-        // 6. Create Enrollment
+        // 7. Create Enrollment
         Enrollment enrollment = new Enrollment();
         enrollment.setStudent(student);
         enrollment.setSection(section);
         enrollment.setStatus(Enrollment.EnrollmentStatus.ENROLLED);
         Enrollment saved = enrollmentRepository.save(enrollment);
 
-        // 7. Increment section enrollment count
+        // 8. Increment section enrollment count
         section.setCurrentEnrollment(section.getCurrentEnrollment() + 1);
         sectionRepository.save(section);
 

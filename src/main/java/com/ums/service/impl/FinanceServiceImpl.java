@@ -54,10 +54,12 @@ public class FinanceServiceImpl implements FinanceService {
             throw new BadRequestException("Due date cannot be in the past.");
         }
 
-        // Get all active enrollments for this term
+        // Get all active enrollments for this term — EXCLUDING ON_LEAVE students
         List<Enrollment> enrollments = enrollmentRepository.findAll().stream()
                 .filter(e -> e.getStatus() == Enrollment.EnrollmentStatus.ENROLLED)
                 .filter(e -> e.getSection().getTerm().getId().equals(term.getId()))
+                // --- NEW: Skip ON_LEAVE / non-ACTIVE students ---
+                .filter(e -> e.getStudent().getAcademicStatus() == Student.AcademicStatus.ACTIVE)
                 .collect(Collectors.toList());
 
         if (enrollments.isEmpty()) {
@@ -79,7 +81,8 @@ public class FinanceServiceImpl implements FinanceService {
             FeeStructure fs = feeStructureRepository
                     .findByDepartmentIdAndTermId(student.getDepartment().getId(), term.getId())
                     .orElseThrow(() -> new BadRequestException(
-                            "No fee structure found for department " + student.getDepartment().getCode()
+                            "No fee structure found for department "
+                                    + student.getDepartment().getCode()
                                     + " in term " + term.getName()));
 
             // Sum enrolled credits for this student in this term
@@ -89,7 +92,8 @@ public class FinanceServiceImpl implements FinanceService {
                     .sum();
 
             // Compute total amount
-            BigDecimal tuition = fs.getTuitionFeePerCredit().multiply(BigDecimal.valueOf(totalCredits));
+            BigDecimal tuition = fs.getTuitionFeePerCredit()
+                    .multiply(BigDecimal.valueOf(totalCredits));
             BigDecimal total = tuition
                     .add(fs.getLibraryFee())
                     .add(fs.getLabFee())
@@ -191,7 +195,8 @@ public class FinanceServiceImpl implements FinanceService {
         // 3. Cannot overpay
         if (request.getAmountPaid().compareTo(remaining) > 0) {
             throw new BadRequestException(
-                    "Payment amount (" + request.getAmountPaid() + ") exceeds remaining balance (" + remaining + ")");
+                    "Payment amount (" + request.getAmountPaid()
+                            + ") exceeds remaining balance (" + remaining + ")");
         }
 
         // 4. Create payment
@@ -292,7 +297,8 @@ public class FinanceServiceImpl implements FinanceService {
         return StudentFinanceSummaryResponse.builder()
                 .studentId(student.getId())
                 .studentRollNumber(student.getRollNumber())
-                .studentFullName(student.getUser().getFirstName() + " " + student.getUser().getLastName())
+                .studentFullName(student.getUser().getFirstName() + " "
+                        + student.getUser().getLastName())
                 .totalInvoices(invoices.size())
                 .totalBilled(totalBilled)
                 .totalPaid(totalPaid)
@@ -333,7 +339,8 @@ public class FinanceServiceImpl implements FinanceService {
                 .createdAt(inv.getCreatedAt())
                 .studentId(student.getId())
                 .studentRollNumber(student.getRollNumber())
-                .studentFullName(student.getUser().getFirstName() + " " + student.getUser().getLastName())
+                .studentFullName(student.getUser().getFirstName() + " "
+                        + student.getUser().getLastName())
                 .studentEmail(student.getUser().getEmail())
                 .termId(inv.getTerm().getId())
                 .termName(inv.getTerm().getName())
@@ -355,7 +362,8 @@ public class FinanceServiceImpl implements FinanceService {
                 .status(p.getStatus())
                 .paymentDate(p.getPaymentDate())
                 .studentId(student.getId())
-                .studentFullName(student.getUser().getFirstName() + " " + student.getUser().getLastName())
+                .studentFullName(student.getUser().getFirstName() + " "
+                        + student.getUser().getLastName())
                 .build();
     }
 }
